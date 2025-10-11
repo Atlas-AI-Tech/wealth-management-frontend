@@ -15,12 +15,12 @@ $chat-window-height: calc(#{$chat-window-base-height} * 100vh / 978);
 }
 
 .customer-chat-window-size {
-  height: 80vh;
-  width: 500px;
+  height: 78vh;
+  width: 480px;
 }
 
 .chat-window {
-  top: 80px;
+  top: 100px;
   // height: 86vh;
   // width: 450px;
   background-color: #ffffff;

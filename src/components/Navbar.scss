@@ -2,42 +2,220 @@
 @use "../styles/variables.scss" as *;
 @use "../styles/mixins.scss" as *;
 
-$navbar-height: 70px;
+// Dashboard Navbar Variables
+$navbar-height: 80px;
+$navbar-padding-x: 32px;
+$navbar-padding-y: 16px;
+$navbar-border-color: #e0e0e0;
 $navbar-shadow-color: rgba(0, 0, 0, 0.04);
-$navbar-padding-x: 20px;
-$navbar-profile-bg-color: #faf0e6;
 
-// Navbar styles
+// Typography Variables
+$title-font-size: 24px;
+$title-font-weight: 500;
+$subtitle-font-size: 13px;
+$subtitle-font-weight: 400;
+$user-info-font-size: 15px;
+$user-info-font-weight: 600;
+$session-info-font-size: 13px;
+$session-info-font-weight: 400;
+
+// Color Variables
+$title-color: #333333;
+$subtitle-color: #666666;
+$user-info-color: #333333;
+$session-info-color: #999999;
+$score-color: #28a745;
+
+// Navbar Container
 .navbar {
   background-color: $primary-bg-color;
   height: $navbar-height;
   width: 100%;
   position: fixed;
   top: 0;
+  left: 0;
+  border-bottom: 1px solid $navbar-border-color;
   box-shadow: $navbar-shadow-color 0px 3px 5px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 $navbar-padding-x;
-  z-index: 500;
+  padding: $navbar-padding-y $navbar-padding-x;
+  z-index: 1;
+  box-sizing: border-box;
 
   &.no-shadow {
     box-shadow: none;
   }
 
-  // Logo styles
-  .logo {
-    height: 50px;
-    width: 160px;
-
-    img {
-      height: 100%;
-      width: 100%;
-      object-fit: cover;
-      cursor: pointer;
-    }
+  // Left Section - Dashboard Title and Description
+  &__left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
   }
 
+  // Main Dashboard Title
+  &__title {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: $title-font-size;
+    font-weight: $title-font-weight;
+    color: $title-color;
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  // Dashboard Subtitle
+  &__subtitle {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: $subtitle-font-size;
+    font-weight: $subtitle-font-weight;
+    color: $subtitle-color;
+    margin: 0;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+  }
+
+  // Right Section - User and Session Information
+  &__right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    text-align: right;
+  }
+
+  // User Information Row
+  &__user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: $user-info-font-size;
+    font-weight: $user-info-font-weight;
+    color: $user-info-color;
+    line-height: 1.3;
+  }
+
+  // User Name
+  &__user-name {
+    font-weight: $user-info-font-weight;
+  }
+
+  // Separator (|)
+  &__separator {
+    color: $user-info-color;
+    font-weight: 400;
+  }
+
+  // RM Information
+  &__rm-info {
+    font-weight: 400;
+  }
+
+  // Session Information Row
+  &__session-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: $session-info-font-size;
+    font-weight: $session-info-font-weight;
+    color: $session-info-color;
+    line-height: 1.3;
+  }
+
+  // Date
+  &__date {
+    font-weight: $session-info-font-weight;
+  }
+
+  // Bullet Separator (•)
+  &__bullet {
+    color: $session-info-color;
+    font-weight: 400;
+  }
+
+  // Duration
+  &__duration {
+    font-weight: $session-info-font-weight;
+  }
+
+  // Score Label
+  &__score-label {
+    font-weight: $session-info-font-weight;
+  }
+
+  // Insight Score (highlighted in green)
+  &__score {
+    color: $score-color;
+    font-weight: $session-info-font-weight;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .navbar {
+    padding: $navbar-padding-y 20px;
+    height: auto;
+    min-height: $navbar-height;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+
+    &__right {
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    &__title {
+      font-size: 20px;
+    }
+
+    &__subtitle {
+      font-size: 12px;
+    }
+
+    &__user-info {
+      font-size: 14px;
+    }
+
+    &__session-info {
+      font-size: 12px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 12px 16px;
+    
+    &__title {
+      font-size: 18px;
+    }
+
+    &__subtitle {
+      font-size: 11px;
+    }
+
+    &__user-info {
+      font-size: 13px;
+      flex-wrap: wrap;
+    }
+
+    &__session-info {
+      font-size: 11px;
+      flex-wrap: wrap;
+    }
+  }
+}
+
+// Legacy styles cleanup - removing old navbar styles that are no longer needed
+// These were the old profile and logout related styles that don't match the new design
+// Keeping them commented out in case they're needed for other components
+
+/*
   // Profile view styles
   .profile-view {
     height: 50px;
@@ -119,4 +297,4 @@ $navbar-profile-bg-color: #faf0e6;
       }
     }
   }
-}
+*/
