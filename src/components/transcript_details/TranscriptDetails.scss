@@ -1,0 +1,436 @@
+@use "../../styles/variables.scss" as *;
+@use "../../styles/mixins.scss" as *;
+
+.transcript-details {
+    height: 100%;
+    width: 100%;
+    background-color: $primary-bg-color;
+    box-shadow: $primary-box-shadow;
+    border-radius: 20px;
+    padding: 25px 20px;
+    overflow-y: auto;
+
+    // Colors for sentiment states
+    --positive-color: #10b981;
+    --positive-bg: #ecfdf5;
+    --positive-border: #d1fae5;
+    
+    --negative-color: #ef4444;
+    --negative-bg: #fef2f2;
+    --negative-border: #fecaca;
+    
+    --neutral-color: #6b7280;
+    --neutral-bg: #f9fafb;
+    --neutral-border: #e5e7eb;
+
+    .no-data {
+        text-align: center;
+        color: var(--neutral-color);
+        padding: 40px;
+        font-size: 16px;
+    }
+}
+
+// Header
+.transcript-header {
+    margin-bottom: 24px;
+
+    h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+    }
+}
+
+// Grid Layout
+.transcript-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+
+    // Special layout for the two cards in the same row
+    &.two-column-layout {
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+
+        @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+        }
+    }
+}
+
+// Card Component
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+
+    &:hover {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    &.full-width {
+        grid-column: 1 / -1;
+    }
+
+    &.overview-card{
+        grid-column: span 3;
+    }
+    
+    &.risk-card {
+        grid-column: span 3;
+    }
+
+    &.product-interests-card,
+    &.portfolio-recommendations-card {
+        width: 100%;
+    }
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f3f4f6;
+
+    .card-icon {
+        font-size: 22px;
+        color: $green-color;
+    }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+    }
+}
+
+.card-content {
+    color: #4b5563;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+// Overview Text
+.overview-text {
+    margin: 0;
+    color: #374151;
+    line-height: 1.7;
+}
+
+// Risk Text
+.risk-text {
+    margin: 0;
+    color: #374151;
+    line-height: 1.7;
+    padding: 12px;
+    background-color: #f0f9ff;
+    border-left: 4px solid #3b82f6;
+    border-radius: 4px;
+}
+
+// List Item Component (Reusable)
+.list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    .list-icon {
+        font-size: 18px;
+        margin-top: 2px;
+        flex-shrink: 0;
+
+        &.positive {
+            color: var(--positive-color);
+        }
+
+        &.negative {
+            color: var(--negative-color);
+        }
+
+        &.neutral {
+            color: var(--neutral-color);
+        }
+    }
+
+    .list-text {
+        flex: 1;
+        color: #374151;
+        line-height: 1.6;
+    }
+
+    &.list-item-positive {
+        background-color: var(--positive-bg);
+        border-left: 3px solid var(--positive-color);
+
+        &:hover {
+            background-color: #d1fae5;
+        }
+    }
+
+    &.list-item-negative {
+        background-color: var(--negative-bg);
+        border-left: 3px solid var(--negative-color);
+
+        &:hover {
+            background-color: #fecaca;
+        }
+    }
+
+    &.list-item-neutral {
+        background-color: var(--neutral-bg);
+        border-left: 3px solid var(--neutral-border);
+
+        &:hover {
+            background-color: #f3f4f6;
+        }
+    }
+}
+
+// Sentiment Section
+.sentiment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.sentiment-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.sentiment-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 12px;
+    border-radius: 8px;
+
+    .sentiment-icon {
+        font-size: 20px;
+    }
+
+    h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    &.positive {
+        background-color: var(--positive-bg);
+        color: var(--positive-color);
+        border: 1px solid var(--positive-border);
+    }
+
+    &.negative {
+        background-color: var(--negative-bg);
+        color: var(--negative-color);
+        border: 1px solid var(--negative-border);
+    }
+}
+
+.sentiment-items {
+    display: flex;
+    flex-direction: column;
+}
+
+// Badges
+.badges-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: #eff6ff;
+    color: #1e40af;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid #bfdbfe;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background-color: #dbeafe;
+        border-color: #93c5fd;
+        transform: translateY(-1px);
+    }
+
+    &.interest-badge {
+        background-color: #fef3c7;
+        color: #92400e;
+        border-color: #fde68a;
+
+        &:hover {
+            background-color: #fde68a;
+            border-color: #fcd34d;
+        }
+    }
+}
+
+// Recommendations List
+.recommendations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+// Next Steps
+.next-steps-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    background-color: #fafafa;
+    border-radius: 8px;
+    border-left: 3px solid $green-color;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background-color: #f3f4f6;
+        transform: translateX(2px);
+    }
+
+    .step-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 28px;
+        background-color: $green-color;
+        color: white;
+        border-radius: 50%;
+        font-weight: 600;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .step-text {
+        flex: 1;
+        color: #374151;
+        line-height: 1.6;
+        font-size: 14px;
+    }
+
+    .step-button {
+        margin-left: 12px;
+        padding: 6px 12px;
+        background-color: $green-color;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+
+        &:hover {
+            background-color: $dark-green-color;
+            transform: translateY(-1px);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+}
+
+// RM Evaluation
+.evaluation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 24px;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.evaluation-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.evaluation-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f3f4f6;
+
+    &.positive {
+        color: var(--positive-color);
+        border-bottom-color: var(--positive-border);
+    }
+
+    &.negative {
+        color: var(--negative-color);
+        border-bottom-color: var(--negative-border);
+    }
+
+    svg {
+        font-size: 18px;
+    }
+}
+
+// Scrollbar Styling
+.transcript-details {
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+
+        &:hover {
+            background: #555;
+        }
+    }
+}

@@ -20,28 +20,14 @@ const Dashboard = () => {
           // Using hardcoded user_uuid from chatService as reference
           const user_uuid = "d3c92895-27dc-41af-9b1b-b29cdc4d8719";
           
-          // Simulate upload time (short period)
-          setTimeout(async () => {
-            const response = await uploadDocumentsToServer(user_uuid, file);
-            
-            // Start analyzing phase (longer period)
-            setIsUploading(false);
-            setIsAnalyzing(true);
-            
-            // Simulate analysis time (longer delay for analyzing)
-            setTimeout(() => {
-              setTranscriptFileDetails(response);
-              setIsAnalyzing(false);
-              console.log('File uploaded successfully:', response);
-            }, 4000); // 4 second delay for analyzing
-            
-          }, 800); // 800ms for uploading phase
+          const response = await uploadDocumentsToServer(user_uuid, file);
+          setTranscriptFileDetails(response);
+          setIsUploading(false);
           
         } catch (error) {
           console.error('Error uploading file:', error);
           alert('Failed to upload file. Please try again.');
           setIsUploading(false);
-          setIsAnalyzing(false);
         }
       }
     };
@@ -58,10 +44,11 @@ const Dashboard = () => {
   );
 
 
+
   return (
     <div className='dashboard'>
       {transcriptFileDetails ? (
-        <TranscriptDetails transcriptData={transcriptFileDetails} />
+        <TranscriptDetails transcriptData={transcriptFileDetails?.analysis} />
       ) : (
         <div className='upload-btn'>
           <button 
@@ -71,7 +58,7 @@ const Dashboard = () => {
           >
             {isUploading && (
               <>
-                Uploading
+                Analyzing in progress
                 <DotAnimation />
               </>
             )}

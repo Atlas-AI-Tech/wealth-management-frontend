@@ -206,14 +206,12 @@ const ChatWindow = ({
         setIsAnimating(true);
         setIsWaitingForAiResponse(false);
       } catch (error) {
-        console.log(error.message);
         setIsWaitingForAiResponse(false); // Handle errors gracefully
         setIsAnimating(false);
       }
     }
   };
 
-  console.log("currentUserView", currentUserView);
 
   return (
     <div
