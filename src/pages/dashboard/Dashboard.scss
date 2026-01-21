@@ -16,61 +16,201 @@
 }
 
 .dashboard {
-  display: flex;
   min-height: 85vh;
   margin-top: 80px;
+  padding: 0 10px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  .upload-btn{
-    height: 70vh;
+  .upload-panel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 18px;
     width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    max-width: 1080px;
+  }
 
-    button {
+  .upload-card {
+    background: #ffffff;
+    border: 1px solid $border-color;
+    border-radius: 20px;
+    padding: 24px 22px;
+    box-shadow: $primary-box-shadow;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba($green-color, 0.08), rgba($green-color, 0.04));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    &.active::after {
+      opacity: 1;
+    }
+
+    .card-head {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: $green-color;
+      margin: 0;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 20px;
+      color: $gray-color;
+    }
+
+    .helper {
+      margin: 0;
+      color: $gray-color;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .cta {
       @include button-styles;
-      width: 270px;
-      height: 40px;
-      background-color: transparent;
-      border: 1px solid $border-color;
-      color: #fff;
+      position: relative;
+      z-index: 1;
+      align-self: flex-start;
+      min-width: 220px;
+      height: 42px;
       background-color: $green-color;
+      border: 1px solid transparent;
+      color: #fff;
       font-size: 14px;
       font-weight: 700;
-      transition: all 0.3s ease;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 6px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
 
       &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 30px rgba($green-color, 0.25);
         background-color: $dark-green-color;
       }
 
       &:disabled {
-        opacity: 0.9;
+        opacity: 0.85;
         cursor: not-allowed;
+        box-shadow: none;
       }
-
-      // &.uploading {
-      //   background-color: $dark-green-color;
-        
-      //   &:hover {
-      //     background-color: $green-color;
-      //   }
-      // }
-
-      // &.analyzing {
-      //   background-color: $green-color;
-        
-      //   &:hover {
-      //     background-color: $dark-green-color;
-      //   }
-      // }
     }
   }
 
-  // Dot animation styles
+  .results-view {
+    width: 100%;
+    max-width: 1080px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 20px;
+  }
+
+  .result-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+
+    .summary-chip {
+      background: rgba($green-color, 0.1);
+      color: $green-color;
+      border-radius: 14px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .ghost-btn {
+      @include button-styles;
+      height: 36px;
+      width: 150px;
+      padding: 0 14px;
+      border: 1px solid $border-color;
+      background: #fff;
+      color: $gray-color;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+
+      &:hover:not(:disabled) {
+        background: $light-gray-color;
+      }
+
+      &:disabled {
+        opacity: 0.75;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .audio-meta {
+    background: #fff;
+    border: 1px solid $border-color;
+    border-radius: 16px;
+    padding: 16px;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    box-shadow: $primary-box-shadow;
+
+    .audio-player,
+    .transcript-link {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: $green-color;
+      margin: 0;
+    }
+
+    audio {
+      width: 100%;
+      outline: none;
+    }
+
+    .link-btn {
+      color: $green-color;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
   .dot-animation {
     display: inline-flex;
     gap: 2px;
@@ -92,6 +232,16 @@
       &:nth-child(3) {
         animation-delay: 0s;
       }
+    }
+  }
+
+  @media (max-width: 768px) {
+    margin-top: 60px;
+    padding: 0 4px 24px;
+
+    .result-actions {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 }
