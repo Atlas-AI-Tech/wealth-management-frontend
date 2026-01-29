@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { 
   FiCheckCircle, 
   FiAlertCircle, 
@@ -7,16 +7,27 @@ import {
   FiTarget,
   FiAward,
   FiThumbsUp,
-  FiThumbsDown
+  FiThumbsDown,
+  FiPlay,
+  FiPause,
+  FiStopCircle
 } from 'react-icons/fi';
+import useTextToSpeech from '../../hooks/useTextToSpeech';
 import './TranscriptDetails.scss';
 
 // Reusable Card Component
-const Card = ({ title, icon: Icon, children, className = '' }) => (
+const Card = ({ title, icon: Icon, children, className = '', headerActions }) => (
   <div className={`card ${className}`}>
     <div className="card-header">
-      {/* {Icon && <Icon className="card-icon" />} */}
-      <h3 className="card-title">{title}</h3>
+      <div className="card-header-main">
+        {/* {Icon && <Icon className="card-icon" />} */}
+        <h3 className="card-title">{title}</h3>
+      </div>
+      {headerActions && (
+        <div className="card-header-actions">
+          {headerActions}
+        </div>
+      )}
     </div>
     <div className="card-content">
       {children}
@@ -90,6 +101,20 @@ const getFirstWord = (text) => {
   return text.split(' ')[0];
 };
 
+// Helper to split conversation into sentences
+const splitIntoSentences = (text) => {
+  if (!text) return [];
+  const normalized = text.replace(/\s+/g, ' ').trim();
+  if (!normalized) return [];
+
+  const matches = normalized.match(/[^.!?]+[.!?"]*/g);
+  if (!matches) {
+    return [normalized];
+  }
+
+  return matches.map((sentence) => sentence.trim()).filter(Boolean);
+};
+
 const TranscriptDetails = ({ transcriptData }) => {
   if (!transcriptData) {
     return (
@@ -109,6 +134,201 @@ const TranscriptDetails = ({ transcriptData }) => {
     rm_evaluation
   } = transcriptData;
 
+  const conversationSentences = useMemo(
+    () => splitIntoSentences(conversation_overview),
+    [conversation_overview]
+  );
+
+  // Tokenize sentences into words and spaces for stable word-level rendering
+  const tokenizedConversation = useMemo(() => {
+    return conversationSentences.map((sentence, sentenceIndex) => {
+      const tokens = [];
+      const parts = sentence.match(/\S+|\s+/g) || [];
+      let wordIndex = 0;
+
+      parts.forEach((part, idx) => {
+        if (/^\s+$/.test(part)) {
+          tokens.push({
+            type: 'space',
+            value: part,
+            key: `s-${sentenceIndex}-sp-${idx}`,
+          });
+        } else {
+          tokens.push({
+            type: 'word',
+            value: part,
+            wordIndex,
+            key: `s-${sentenceIndex}-w-${wordIndex}`,
+          });
+          wordIndex += 1;
+        }
+      });
+
+      return {
+        sentenceIndex,
+        tokens,
+        wordCount: wordIndex,
+      };
+    });
+  }, [conversationSentences]);
+
+  // Voice handling (accent + gender selection)
+  const [voiceOptions, setVoiceOptions] = useState([]);
+  const [selectedVoiceId, setSelectedVoiceId] = useState('');
+
+  const selectedVoice = useMemo(
+    () => voiceOptions.find((opt) => opt.id === selectedVoiceId)?.voice || null,
+    [voiceOptions, selectedVoiceId]
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      return;
+    }
+
+    const synthesis = window.speechSynthesis;
+
+    const inferGender = (voice) => {
+      const name = (voice.name || '').toLowerCase();
+      if (
+        name.includes('tessa') ||
+        name.includes('moira') ||
+        name.includes('female') ||
+        name.includes('girl') ||
+        name.includes('emma') ||
+        name.includes('amy') ||
+        name.includes('sara') ||
+        name.includes('olivia')
+      ) {
+        return 'Female';
+      }
+      if (
+        name.includes('daniel') ||
+        name.includes('male') ||
+        name.includes('man') ||
+        name.includes('boy') ||
+        name.includes('brian') ||
+        name.includes('arthur') ||
+        name.includes('george') ||
+        name.includes('harry')
+      ) {
+        return 'Male';
+      }
+      return 'Neutral';
+    };
+
+    const buildVoiceOptions = () => {
+      const allVoices = synthesis.getVoices() || [];
+      if (!allVoices.length) return;
+
+      const englishVoices = allVoices.filter((voice) => {
+        const lang = (voice.lang || '').toLowerCase();
+        return lang.startsWith('en');
+      });
+
+      if (!englishVoices.length) {
+        setVoiceOptions([]);
+        return;
+      }
+
+      const maleVoices = englishVoices.filter((voice) => inferGender(voice) === 'Male');
+      const femaleVoices = englishVoices.filter((voice) => inferGender(voice) === 'Female');
+
+      const options = [];
+
+      if (femaleVoices.length > 0) {
+        const tessaVoice = femaleVoices.find((voice) => 
+          (voice.name || '').toLowerCase().includes('tessa')
+        );
+        const defaultFemale = tessaVoice || femaleVoices[0];
+        const id = defaultFemale.voiceURI || `${defaultFemale.name}-${defaultFemale.lang}`;
+        options.push({
+          id,
+          label: `Atlas Voice - Female`,
+          voice: defaultFemale,
+        });
+      }
+
+      if (maleVoices.length > 0) {
+        const danielVoice = maleVoices.find((voice) => 
+          (voice.name || '').toLowerCase().includes('daniel')
+        );
+        const defaultMale = danielVoice || maleVoices[0];
+        const id = defaultMale.voiceURI || `${defaultMale.name}-${defaultMale.lang}`;
+        options.push({
+          id,
+          label: `Atlas Voice - Male`,
+          voice: defaultMale,
+        });
+      }
+
+      setVoiceOptions(options);
+
+      if (!selectedVoiceId && options.length) {
+        setSelectedVoiceId(options[0].id);
+      }
+    };
+
+    buildVoiceOptions();
+
+    synthesis.addEventListener('voiceschanged', buildVoiceOptions);
+
+    return () => {
+      synthesis.removeEventListener('voiceschanged', buildVoiceOptions);
+    };
+  }, [selectedVoiceId]);
+
+  const {
+    status: ttsStatus,
+    activeSentenceIndex: ttsActiveSentenceIndex,
+    activeWordIndex: ttsActiveWordIndex,
+    isSupported: isTTSSupported,
+    error: ttsError,
+    play: ttsPlay,
+    pause: ttsPause,
+    resume: ttsResume,
+    stop: ttsStop
+  } = useTextToSpeech({
+    sentences: conversationSentences,
+    enabled: Boolean(conversation_overview),
+    voice: selectedVoice,
+  });
+
+  // Primary Play / Pause / Resume handler
+  const handleTtsPrimaryAction = () => {
+    if (!isTTSSupported || !conversationSentences.length) return;
+
+    if (ttsStatus === 'playing') {
+      ttsPause();
+    } else if (ttsStatus === 'paused') {
+      ttsResume();
+    } else {
+      ttsPlay();
+    }
+  };
+
+  // Explicit Stop handler
+  const handleTtsStop = () => {
+    if (!isTTSSupported) return;
+    ttsStop();
+  };
+
+  const handleVoiceChange = (event) => {
+    const nextVoiceId = event.target.value;
+    const shouldRestart =
+      ttsStatus === 'playing' && isTTSSupported && conversationSentences.length > 0;
+
+    setSelectedVoiceId(nextVoiceId);
+
+    if (isTTSSupported) {
+      ttsStop();
+      if (shouldRestart) {
+        setTimeout(() => {
+          ttsPlay();
+        }, 0);
+      }
+    }
+  };
 
   return (
     <div className="transcript-details">
@@ -119,8 +339,121 @@ const TranscriptDetails = ({ transcriptData }) => {
       <div className="transcript-grid">
         {/* Conversation Overview */}
         {conversation_overview && (
-          <Card title="Conversation Overview" icon={FiPackage} className="overview-card " >
-            <p className="risk-text">{conversation_overview}</p>
+          <Card
+            title="Conversation Overview"
+            icon={FiPackage}
+            className="overview-card"
+            headerActions={
+              <div className="tts-controls">
+                {isTTSSupported && voiceOptions.length > 0 && (
+                  <select
+                    className="tts-voice-select"
+                    value={selectedVoiceId}
+                    onChange={handleVoiceChange}
+                    aria-label="Select reading voice"
+                  >
+                    {voiceOptions.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <button
+                  type="button"
+                  className="tts-button"
+                  onClick={handleTtsPrimaryAction}
+                  disabled={!isTTSSupported || !conversationSentences.length}
+                  aria-label={
+                    !isTTSSupported
+                      ? 'Text to speech is not available'
+                      : ttsStatus === 'playing'
+                        ? 'Pause reading conversation'
+                        : ttsStatus === 'paused'
+                          ? 'Resume reading conversation'
+                          : 'Play conversation as audio'
+                  }
+                  aria-pressed={ttsStatus === 'playing'}
+                >
+                  {!isTTSSupported
+                    ? <FiPlay />
+                    : ttsStatus === 'playing'
+                      ? <FiPause />
+                      : <FiPlay />}
+                </button>
+                <button
+                  type="button"
+                  className="tts-button tts-button-stop"
+                  onClick={handleTtsStop}
+                  disabled={!isTTSSupported || ttsStatus === 'idle'}
+                  aria-label="Stop reading conversation"
+                >
+                  <FiStopCircle />
+                </button>
+              </div>
+            }
+          >
+            <p className="overview-text tts-text" aria-live="off">
+              {tokenizedConversation.map(({ sentenceIndex, tokens }) => (
+                <span key={sentenceIndex} className="tts-sentence">
+                  {tokens.map((token) => {
+                    if (token.type === 'space') {
+                      return token.value;
+                    }
+
+                    const isFinished = ttsStatus === 'finished';
+                    let wordClassName = 'tts-word';
+
+                    if (!isTTSSupported || !conversationSentences.length) {
+                      wordClassName = 'tts-word';
+                    } else if (isFinished) {
+                      wordClassName = 'tts-word tts-read';
+                    } else if (ttsStatus === 'playing' || ttsStatus === 'paused') {
+                      if (ttsActiveSentenceIndex === -1 && ttsActiveWordIndex === -1) {
+                        wordClassName = 'tts-word tts-light';
+                      } else if (sentenceIndex < ttsActiveSentenceIndex) {
+                        wordClassName = 'tts-word tts-read';
+                      } else if (sentenceIndex > ttsActiveSentenceIndex) {
+                        wordClassName = 'tts-word tts-light';
+                      } else if (token.wordIndex < ttsActiveWordIndex) {
+                        wordClassName = 'tts-word tts-read';
+                      } else if (token.wordIndex === ttsActiveWordIndex) {
+                        wordClassName = 'tts-word tts-active';
+                      } else {
+                        wordClassName = 'tts-word tts-light';
+                      }
+                    } else {
+                      wordClassName = 'tts-word tts-light';
+                    }
+
+                    const isActiveWord =
+                      sentenceIndex === ttsActiveSentenceIndex &&
+                      token.wordIndex === ttsActiveWordIndex;
+
+                    return (
+                      <span
+                        key={token.key}
+                        className={wordClassName}
+                        aria-live={isActiveWord ? 'polite' : undefined}
+                        aria-atomic={isActiveWord ? 'true' : undefined}
+                      >
+                        {token.value}
+                      </span>
+                    );
+                  })}
+                </span>
+              ))}
+            </p>
+            {!isTTSSupported && (
+              <p className="tts-support-message">
+                Text-to-speech is not available in this browser.
+              </p>
+            )}
+            {/* {ttsError && (
+              <p className="tts-error-message">
+                {ttsError}
+              </p>
+            )} */}
           </Card>
         )}
 
