@@ -236,19 +236,6 @@ const TranscriptDetails = ({ transcriptData }) => {
 
       const options = [];
 
-      if (femaleVoices.length > 0) {
-        const tessaVoice = femaleVoices.find((voice) => 
-          (voice.name || '').toLowerCase().includes('tessa')
-        );
-        const defaultFemale = tessaVoice || femaleVoices[0];
-        const id = defaultFemale.voiceURI || `${defaultFemale.name}-${defaultFemale.lang}`;
-        options.push({
-          id,
-          label: `Atlas Voice - Female`,
-          voice: defaultFemale,
-        });
-      }
-
       if (maleVoices.length > 0) {
         const danielVoice = maleVoices.find((voice) => 
           (voice.name || '').toLowerCase().includes('daniel')
@@ -259,6 +246,19 @@ const TranscriptDetails = ({ transcriptData }) => {
           id,
           label: `Atlas Voice - Male`,
           voice: defaultMale,
+        });
+      }
+
+      if (femaleVoices.length > 0) {
+        const tessaVoice = femaleVoices.find((voice) => 
+          (voice.name || '').toLowerCase().includes('tessa')
+        );
+        const defaultFemale = tessaVoice || femaleVoices[0];
+        const id = defaultFemale.voiceURI || `${defaultFemale.name}-${defaultFemale.lang}`;
+        options.push({
+          id,
+          label: `Atlas Voice - Female`,
+          voice: defaultFemale,
         });
       }
 
